@@ -1,167 +1,4 @@
-/*import React, { useRef, useState } from "react";
-import Webcam from "react-webcam";
-import { supabase } from "../supabaseClient";
 
-export default function SelfieUpload({ onClose, onUploadSuccess }) {
-  const webcamRef = useRef(null);
-  const [imageSrc, setImageSrc] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [student, setStudent] = useState(null);
-
-  // Fetch current student info once
-  React.useEffect(() => {
-    const fetchStudent = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("students")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) console.error("Error fetching student:", error);
-      if (data) setStudent(data);
-    };
-    fetchStudent();
-  }, []);
-
-  // Capture image from webcam
-  const capture = () => {
-    const image = webcamRef.current.getScreenshot();
-    if (image) setImageSrc(image);
-  };
-
-  // Upload to Supabase + update attendance
-  const captureAndUpload = async () => {
-    if (!imageSrc) return alert("Please capture a selfie first!");
-    if (!student?.rfid_uid) return alert("Student info not loaded yet!");
-    setLoading(true);
-
-    try {
-      // Convert captured base64 image to Blob
-      const blob = await (await fetch(imageSrc)).blob();
-
-      const fileName = `${student.rfid_uid}_${Date.now()}.jpg`;
-      const filePath = `selfies/${fileName}`;
-
-      // 1️⃣ Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from("attendance-photos")
-        .upload(filePath, blob, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // 2️⃣ Get public URL of uploaded selfie
-      const { data: urlData } = supabase
-        .storage
-        .from("attendance-photos")
-        .getPublicUrl(filePath);
-
-      const publicUrl = urlData.publicUrl;
-
-      // 3️⃣ Prepare today’s date (YYYY-MM-DD)
-      const today = new Date().toISOString().split("T")[0];
-
-      // 4️⃣ Find the student's attendance record for today by RFID
-      const { data: logs, error: fetchError } = await supabase
-        .from("attendance_logs")
-        .select("id")
-        .eq("rfid_uid", student.rfid_uid)
-        .eq("date_", today);
-
-      if (fetchError) throw fetchError;
-
-      if (!logs || logs.length === 0) {
-        alert("⚠️ No matching attendance record found for today!");
-        setLoading(false);
-        return;
-      }
-
-      const recordId = logs[0].id;
-
-      // 5️⃣ Update record with photo_url + location
-      const { data: updated, error: updateError } = await supabase
-        .from("attendance_logs")
-        .update({
-          photo_url: publicUrl,
-          latitude: location?.latitude || null,
-          longitude: location?.longitude || null,
-        })
-        .eq("id", recordId)
-        .select("*");
-
-      if (updateError) throw updateError;
-
-      if (updated?.length > 0) {
-        alert("✅ Selfie uploaded and attendance updated with location!");
-      }
-
-      if (onUploadSuccess) onUploadSuccess(publicUrl);
-      onClose();
-    } catch (err) {
-      console.error("❌ Error uploading selfie:", err);
-      alert("Failed to upload selfie. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg text-center space-y-4 max-w-md w-full">
-        <h2 className="text-xl font-semibold text-gray-800">Take a Selfie</h2>
-
-        {!imageSrc ? (
-          <Webcam
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            videoConstraints={{ facingMode: "user" }}
-            className="w-full rounded-lg"
-          />
-        ) : (
-          <img src={imageSrc} alt="Captured" className="w-full rounded-lg" />
-        )}
-
-        <div className="flex justify-center gap-4 mt-4">
-          {!imageSrc ? (
-            <button
-              onClick={capture}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Capture
-            </button>
-          ) : (
-            <button
-              onClick={() => setImageSrc(null)}
-              className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-            >
-              Retake
-            </button>
-          )}
-
-          <button
-            onClick={captureAndUpload}
-            disabled={loading}
-            className={`${
-              loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
-            } text-white px-4 py-2 rounded`}
-          >
-            {loading ? "Uploading..." : "Upload"}
-          </button>
-
-          <button
-            onClick={onClose}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-*/
 import React, { useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
 import { supabase } from "../supabaseClient";
@@ -329,13 +166,13 @@ export default function SelfieUpload({ onClose, onUploadSuccess }) {
       if (updateError) throw updateError;
 
       if (updated?.length > 0) {
-        alert("✅ Selfie uploaded with embedded location!");
+        alert("Selfie uploaded successfully!!..");
       }
 
       if (onUploadSuccess) onUploadSuccess(publicUrl);
       onClose();
     } catch (err) {
-      console.error("❌ Error uploading selfie:", err);
+      console.error("Error uploading selfie:", err);
       alert("Failed to upload selfie. Please try again.");
     } finally {
       setLoading(false);

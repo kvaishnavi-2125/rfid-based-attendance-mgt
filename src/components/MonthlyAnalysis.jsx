@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-//import { downloadMonthlyReport, downloadDefaulters } from "./ReportDownloader";
+import { downloadMonthlyReport, downloadDefaulters } from "./reportdownloader";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export default function MonthlyAnalysis() {

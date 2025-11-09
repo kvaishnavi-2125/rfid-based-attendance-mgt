@@ -31,6 +31,45 @@ export function downloadExcel(filename, data) {
   XLSX.writeFile(wb, filename);
 }
 
+export function downloadMonthlyReport(studentsMonthly, selectedMonth) {
+  if (!studentsMonthly.length) {
+    alert("No monthly data to export!");
+    return;
+  }
+
+  const columns = ["Name", "Present", "Total", "Percentage"];
+  const data = studentsMonthly.map((s) => ({
+    Name: s.name,
+    Present: s.present,
+    Total: s.total,
+    Percentage: `${s.percentage}%`,
+  }));
+
+  const title = `Monthly Attendance Report - ${selectedMonth}`;
+  const filename = `Monthly_Report_${selectedMonth}.pdf`;
+
+  downloadPDF(filename, columns, data, title);
+}
+
+export function downloadDefaulters(studentsMonthly) {
+  const defaulters = studentsMonthly.filter((s) => s.percentage < 75);
+  if (!defaulters.length) {
+    alert("No defaulters found!");
+    return;
+  }
+
+  const columns = ["Name", "Attendance %"];
+  const data = defaulters.map((s) => ({
+    Name: s.name,
+    "Attendance %": `${s.percentage}%`,
+  }));
+
+  const title = "Defaulter List (Below 75%)";
+  const filename = `Defaulters_${new Date().toISOString().slice(0, 7)}.pdf`;
+
+  downloadPDF(filename, columns, data, title);
+}
+
 
 
 export function downloadPDF(filename, columns, data, title = "", summary = {}) {
