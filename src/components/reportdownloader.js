@@ -56,7 +56,6 @@ export function downloadMonthlyReport(studentsMonthly, selectedMonth) {
   downloadPDF(filename, columns, data, title, null);
 }
 
-
 export function downloadDefaulters(studentsMonthly) {
   const defaulters = studentsMonthly.filter((s) => s.percentage < 75);
   if (!defaulters.length) {
