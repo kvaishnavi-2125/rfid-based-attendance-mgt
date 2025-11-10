@@ -37,7 +37,10 @@ export function downloadMonthlyReport(studentsMonthly, selectedMonth) {
     return;
   }
 
+  // Table columns (Sr. No. will be auto-added by downloadPDF)
   const columns = ["Name", "Present", "Total", "Percentage"];
+
+  // Prepare data for table
   const data = studentsMonthly.map((s) => ({
     Name: s.name,
     Present: s.present,
@@ -45,11 +48,14 @@ export function downloadMonthlyReport(studentsMonthly, selectedMonth) {
     Percentage: `${s.percentage}%`,
   }));
 
+  // Title and filename
   const title = `Monthly Attendance Report - ${selectedMonth}`;
   const filename = `Monthly_Report_${selectedMonth}.pdf`;
 
-  downloadPDF(filename, columns, data, title);
+  // Call downloadPDF without summary
+  downloadPDF(filename, columns, data, title, null);
 }
+
 
 export function downloadDefaulters(studentsMonthly) {
   const defaulters = studentsMonthly.filter((s) => s.percentage < 75);
