@@ -7,10 +7,10 @@ export default function App() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-gray-800">
       <div className="text-center mb-12">
         <h1 className="text-5xl font-extrabold mb-4 text-gray-900">
-          Smart Attendance System
+          A Cloud-Integrated IoT-RFID Based Attendance System
         </h1>
         <p className="text-lg text-gray-600">
-          RFID-Based Attendance Management with Facial Recognition
+          Featuring Real-Time Web Monitoring, Selfie Verfication and Analytics
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export default function App() {
       </div>
 
       <footer className="mt-12 text-sm text-gray-500">
-        © {new Date().getFullYear()} Smart Attendance System
+        © {new Date().getFullYear()} Made with ❤️ by Vaishnavi and Akshata
       </footer>
     </div>
   );
