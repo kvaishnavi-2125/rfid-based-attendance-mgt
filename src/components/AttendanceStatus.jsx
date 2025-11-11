@@ -9,22 +9,25 @@ export default function AttendanceStatus() {
   // ✅ States
   const [students, setStudents] = useState([]);
   const [logs, setLogs] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
+  const [selectedDate, setSelectedDate] = useState("");
+  const [availableDates, setAvailableDates] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
 
   // ✅ Fetch students on mount
   useEffect(() => {
     fetchStudents();
+    fetchAvailableDates();
   }, []);
 
-  // ✅ Fetch logs when date changes
+  // ✅ Fetch logs when selectedDate changes
   useEffect(() => {
-    fetchLogs(selectedDate);
+    if (selectedDate) fetchLogs(selectedDate);
   }, [selectedDate]);
 
   // ✅ Real-time Supabase listener + polling
   useEffect(() => {
-    // 🧠 Real-time updates filtered by selected date
+    if (!selectedDate) return;
+
     const channel = supabase
       .channel("attendance_live")
       .on(
@@ -40,6 +43,9 @@ export default function AttendanceStatus() {
               );
               return [payload.new, ...otherLogs];
             });
+          } else {
+            // If a new date appears in realtime, refetch available dates
+            fetchAvailableDates();
           }
         }
       )
@@ -54,16 +60,37 @@ export default function AttendanceStatus() {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [selectedDate]); // ✅ re-registers listener & poller when date changes
+  }, [selectedDate]);
 
-  // ✅ Fetch students
+  // ✅ Fetch all students
   async function fetchStudents() {
     const { data, error } = await supabase
       .from("students")
       .select("*")
       .order("name");
+
     if (error) console.error("Error fetching students:", error);
     else setStudents(data || []);
+  }
+
+  // ✅ Fetch available attendance dates
+  async function fetchAvailableDates() {
+    const { data, error } = await supabase
+      .from("attendance_logs")
+      .select("date_")
+      .order("date_", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching dates:", error);
+      return;
+    }
+
+    const uniqueDates = [...new Set(data.map((item) => item.date_))];
+
+    setAvailableDates(uniqueDates);
+    if (uniqueDates.length && !selectedDate) {
+      setSelectedDate(uniqueDates[0]); // ✅ Default to the latest Supabase date
+    }
   }
 
   // ✅ Fetch attendance logs for the selected date
@@ -77,7 +104,7 @@ export default function AttendanceStatus() {
     else setLogs(data || []);
   }
 
-  // ✅ Build log map (only for selected date)
+  // ✅ Build log map for selected date
   const filteredLogs = logs.filter((l) => l.date_ === selectedDate);
   const logMap = filteredLogs.reduce((map, log) => {
     map[log.student_name] = log;
@@ -87,7 +114,7 @@ export default function AttendanceStatus() {
   const totalPresent = students.filter((s) => logMap[s.name]?.time_in).length;
   const totalAbsent = students.length - totalPresent;
 
-  // ✅ Status display
+  // ✅ Status label
   const getStatus = (log) => {
     if (!log?.time_in)
       return (
@@ -127,12 +154,18 @@ export default function AttendanceStatus() {
         <div className="flex justify-between items-center mb-6 gap-4 flex-wrap">
           {/* Left: Date + downloads */}
           <div className="flex flex-wrap items-center gap-3">
-            <input
-              type="date"
+            <select
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2"
-            />
+            >
+              {availableDates.map((date) => (
+                <option key={date} value={date}>
+                  {date}
+                </option>
+              ))}
+            </select>
+
             <button
               onClick={() =>
                 downloadAttendance(logs, students, "excel", selectedDate)
@@ -141,6 +174,7 @@ export default function AttendanceStatus() {
             >
               Download Excel
             </button>
+
             <button
               onClick={() =>
                 downloadAttendance(logs, students, "pdf", selectedDate)
